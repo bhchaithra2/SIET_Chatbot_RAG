@@ -5,7 +5,7 @@ from pypdf import Pdfreader
 from sentence_transformers import SentenceTransformer
 
 #load pdfs
-def load_pdf (pdf_party):
+def load_pdf (pdf_path):
   reader = PdfReader(str(pdf_path))
   mypages = [i.extract_text() or '' for i in reader.pages]
   full_text = "\n".join(mypages).strip()
@@ -24,6 +24,7 @@ def create_chunks(full_text, chunksize = 500, overlap=100):
       chunks.append(chunk)
     start = end - overlap             #500-100=400       900-100=800        1300-100=1200
   return chunks
+  
 #Embedding:
 def build_vectors (chunks, model_name = "all-MiniLM-L6-V2"):
   if not chunks:
@@ -39,7 +40,7 @@ def build_vectors (chunks, model_name = "all-MiniLM-L6-V2"):
 def load_base (pdf_path= "01_College_Information.pdf"):
   full_text = load_pdf(pdf_path)
   chunks = create_chunks(full_text)
-  index, embed_model = build_vector(chunks)
+  index, embed_model = build_vectors(chunks)
   return index, embed_model, chunks
 
 #retrieve
@@ -57,25 +58,25 @@ def retrieve_content(question, embed_model, chunks, index, num_chunks=3):
       background += chunks[i] + "\n\n"
   return background
 
-  #Ask:
-  def ask_rag (question, embed_model, chunks, Index, api_key, num_chunks, model_name ='openai/gpt-oss-20b'):
-    key = api_key
-    if not key:
-      raise ValueError("API key Missing")
-    background = retrive_content(question, embed_model, chunks, Index, api_key, num_chunks, model_name ='openai/gpt-oss-20b'):
-    prompt = """You are an professinal AI Assitant.
-    Answer user question using ONLY document background below.
-    Do not invent or assume facts.
-    If information not available , simply say Information Missing.
-    Document Background :"""+ background + "User Question" + question + "Answer:"
-    client = Groq(api_key = key)
-    response = client.chat.completions.create(
-      model = model_name,
-      messages = [ {"role" : "user",
-                    "content" : prompt}],
-                     temperature = 0.3,
-    )
-    return response.choices[0].message.content
+#Ask:
+def ask_rag (question, embed_model, chunks, Index, api_key, num_chunks, model_name ='openai/gpt-oss-20b'):
+  key = api_key
+  if not key:
+    raise ValueError("API key Missing")
+  background = retrive_content(question, embed_model, chunks, Index, api_key, num_chunks, model_name ='openai/gpt-oss-20b'):
+  prompt = """You are an professinal AI Assitant.
+  Answer user question using ONLY document background below.
+  Do not invent or assume facts.
+  If information not available , simply say Information Missing.
+  Document Background :"""+ background + "User Question" + question + "Answer:"
+  client = Groq(api_key = key)
+  response = client.chat.completions.create(
+    model = model_name,
+    messages = [ {"role" : "user",
+                  "content" : prompt}],
+                   temperature = 0.3,
+  )
+  return response.choices[0].message.content
     
     
     
