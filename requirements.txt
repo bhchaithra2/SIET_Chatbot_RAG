@@ -1,6 +1,6 @@
 streamlit
-py pdf
-sentence -transformers
+pypdf
+sentence-transformers
 faiss-cpu
 groq
 numpy
