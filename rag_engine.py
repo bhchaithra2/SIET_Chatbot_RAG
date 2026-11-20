@@ -63,7 +63,7 @@ def ask_rag (question, embed_model, chunks, Index, api_key, num_chunks, model_na
   key = api_key
   if not key:
     raise ValueError("API key Missing")
-  background = retrive_content(question, embed_model, chunks, Index, api_key, num_chunks, model_name ='openai/gpt-oss-20b'):
+  background = retrive_content(question, embed_model, chunks, Index, api_key, num_chunks=3)
   prompt = """You are an professinal AI Assitant.
   Answer user question using ONLY document background below.
   Do not invent or assume facts.
